@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 
 const blogPostModel = new Schema(
   {
-    _id: { type: Number },
+    // _id: { type: Number },
     category: { type: String, required: true },
     title: { type: String, required: true },
     cover: { type: String, required: true },
