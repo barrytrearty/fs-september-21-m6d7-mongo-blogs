@@ -118,13 +118,10 @@ blogPostRoute.get("/:_id/comments/:commentId", async (req, res, next) => {
 
 blogPostRoute.post("/:_id/comments/", async (req, res, next) => {
   try {
-    console.log(req.body);
-    const newComment = new commentModel(req.body);
-    // const newerComment = await newComment;
-    console.log(newComment);
     const updatedBlogPost = await blogPostModel.findByIdAndUpdate(
       req.params._id,
-      { $push: { comments: newComment } },
+      { $push: { comments: req.body } },
+      // { $push: { comments: mongoose.Types.ObjectId(id) } },
       { new: true }
     );
     if (updatedBlogPost) {
