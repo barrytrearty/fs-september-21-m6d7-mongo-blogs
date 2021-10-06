@@ -16,13 +16,16 @@ const blogPostModel = new Schema(
       required: true,
     },
     author: {
-      type: {
-        name: String,
-        avatar: String,
-      },
-      required: true,
+      name: String,
+      avatar: String,
     },
     content: String,
+    comments: [
+      {
+        text: { type: String, required: true },
+        username: { type: String, required: true },
+      },
+    ],
   },
   {
     timestamps: true,
