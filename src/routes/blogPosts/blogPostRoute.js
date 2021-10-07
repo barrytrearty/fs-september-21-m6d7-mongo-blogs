@@ -21,12 +21,8 @@ blogPostRoute.get("/", async (req, res, next) => {
   try {
     const q2mQuery = q2m(req.query);
     console.log(q2mQuery);
-    const totalPosts = await blogPostModel.countDocuments(q2mQuery.criteria);
-    const blogPosts = await blogPostModel
-      .find(q2mQuery.criteria, q2mQuery.options.fields)
-      .limit(q2mQuery.options.limit)
-      .skip(q2mQuery.options.skip)
-      .sort(q2mQuery.options.sort);
+    const { totalPosts, blogPosts } =
+      await blogPostModel.findBlogPostWithAuthors(q2mQuery);
     res.send({ totalPosts, blogPosts });
   } catch (error) {
     next(error);

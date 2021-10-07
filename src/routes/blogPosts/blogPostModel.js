@@ -25,10 +25,7 @@ const blogPostModel = new Schema(
       },
       required: true,
     },
-    author: {
-      name: String,
-      avatar: String,
-    },
+    authors: [{ type: Schema.Types.ObjectId, ref: "authors" }],
     content: String,
     comments: [commentModel],
   },
@@ -36,5 +33,18 @@ const blogPostModel = new Schema(
     timestamps: true,
   }
 );
+
+blogPostModel.static("findBlogPostWithAuthors", async function (mongoQuery) {
+  const totalPosts = await this.countDocuments(mongoQuery.criteria);
+  const blogPosts = await this.find(
+    mongoQuery.criteria,
+    mongoQuery.options.fields
+  )
+    .limit(mongoQuery.options.limit)
+    .skip(mongoQuery.options.skip)
+    .sort(mongoQuery.options.sort)
+    .populate({ path: "authors" });
+  return { totalPosts, blogPosts };
+});
 
 export default model("blogPost", blogPostModel);
