@@ -2,15 +2,25 @@ import express from "express";
 import createHttpError from "http-errors";
 import authorModel from "./authorModel.js";
 import q2m from "query-to-mongo";
+import { basicAuthMiddleware } from "../auth/basic.js";
 
 const authorRoute = express.Router();
 
-authorRoute.get("/", async (req, res, next) => {
+// authorRoute.get("/", basicAuthMiddleware, async (req, res, next) => {
+//   try {
+//     const q2mQuery = q2m(req.query);
+//     console.log(q2mQuery);
+//     const { totalAuthors, authors } = await authorModel.findAuthors(q2mQuery);
+//     res.send({ totalAuthors, authors });
+//   } catch (error) {
+//     next(error);
+//   }
+// });
+
+authorRoute.get("/", basicAuthMiddleware, async (req, res, next) => {
   try {
-    const q2mQuery = q2m(req.query);
-    console.log(q2mQuery);
-    const { totalAuthors, authors } = await authorModel.findAuthors(q2mQuery);
-    res.send({ totalAuthors, authors });
+    const authors = await authorModel.find();
+    res.send(authors);
   } catch (error) {
     next(error);
   }

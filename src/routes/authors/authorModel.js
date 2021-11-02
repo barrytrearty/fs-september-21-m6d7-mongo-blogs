@@ -33,4 +33,15 @@ authorModel.static("findAuthors", async function (mongoQuery) {
   return { totalAuthors, authors };
 });
 
+authorModel.statics.checkCredentials = async function (email, password) {
+  const author = await this.findOne({ email });
+
+  console.log(author);
+  if (author) {
+    const isMatch = await bcrypt.compare(password, author.password);
+    if (isMatch) return author;
+    else return null;
+  } else return null;
+};
+
 export default model("authors", authorModel);
