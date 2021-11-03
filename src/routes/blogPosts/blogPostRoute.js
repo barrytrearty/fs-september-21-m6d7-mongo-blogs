@@ -25,7 +25,8 @@ blogPostRoute.get("/", async (req, res, next) => {
     console.log(q2mQuery);
     const { totalPosts, blogPosts } =
       await blogPostModel.findBlogPostWithAuthors(q2mQuery);
-    res.send({ totalPosts, blogPosts });
+    // res.send({ totalPosts, blogPosts });
+    res.send(blogPosts);
   } catch (error) {
     next(error);
   }
@@ -71,8 +72,8 @@ blogPostRoute.put(
 
 blogPostRoute.delete(
   "/:_id",
-  checksLoginMiddleware,
-  onlyUserMiddleware,
+  // checksLoginMiddleware,
+  // onlyUserMiddleware,
   async (req, res, next) => {
     try {
       const id = req.params._id;
