@@ -3,6 +3,8 @@ import createHttpError from "http-errors";
 import blogPostModel from "./blogPostModel.js";
 import commentModel from "./commentModel.js";
 import q2m from "query-to-mongo";
+import { checksLoginMiddleware } from "../auth/checksLogin.js";
+import { onlyUserMiddleware } from "../auth/onlyUser.js";
 
 const blogPostRoute = express.Router();
 
@@ -45,38 +47,48 @@ blogPostRoute.get("/:_id", async (req, res, next) => {
   }
 });
 
-blogPostRoute.put("/:_id", async (req, res, next) => {
-  try {
-    const id = req.params._id;
-    const modifiedUser = await blogPostModel.findByIdAndUpdate(id, req.body, {
-      new: true, // returns the modified user
-    });
+blogPostRoute.put(
+  "/:_id",
+  checksLoginMiddleware,
+  onlyUserMiddleware,
+  async (req, res, next) => {
+    try {
+      const id = req.params._id;
+      const modifiedUser = await blogPostModel.findByIdAndUpdate(id, req.body, {
+        new: true, // returns the modified user
+      });
 
-    if (modifiedUser) {
-      res.send(modifiedUser);
-    } else {
-      next(createHttpError(404, `Blog Post with id ${id} not found!`));
+      if (modifiedUser) {
+        res.send(modifiedUser);
+      } else {
+        next(createHttpError(404, `Blog Post with id ${id} not found!`));
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
-blogPostRoute.delete("/:_id", async (req, res, next) => {
-  try {
-    const id = req.params._id;
+blogPostRoute.delete(
+  "/:_id",
+  checksLoginMiddleware,
+  onlyUserMiddleware,
+  async (req, res, next) => {
+    try {
+      const id = req.params._id;
 
-    const deletedUser = await blogPostModel.findByIdAndDelete(id);
+      const deletedUser = await blogPostModel.findByIdAndDelete(id);
 
-    if (deletedUser) {
-      res.status(204).send();
-    } else {
-      next(createHttpError(404, `Blog Post with id ${id} not found!`));
+      if (deletedUser) {
+        res.status(204).send();
+      } else {
+        next(createHttpError(404, `Blog Post with id ${id} not found!`));
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 blogPostRoute.get("/:_id/comments/", async (req, res, next) => {
   try {

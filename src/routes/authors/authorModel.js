@@ -21,6 +21,15 @@ authorModel.pre("save", async function (next) {
   next();
 });
 
+authorModel.methods.toJSON = function () {
+  const authorDocument = this;
+  const authorObject = authorDocument.toObject();
+  delete authorObject.password;
+  delete authorObject.__v;
+
+  return authorObject;
+};
+
 authorModel.static("findAuthors", async function (mongoQuery) {
   const totalAuthors = await this.countDocuments(mongoQuery.criteria);
   const authors = await this.find(

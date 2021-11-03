@@ -2,7 +2,7 @@ import createHttpError from "http-errors";
 import atob from "atob";
 import authorModel from "../authors/authorModel.js";
 
-export const basicAuthMiddleware = async (req, res, next) => {
+export const checksLoginMiddleware = async (req, res, next) => {
   if (!req.headers.authorization) {
     next(createHttpError(401, "No authorization"));
   } else {
@@ -16,6 +16,8 @@ export const basicAuthMiddleware = async (req, res, next) => {
     if (author) {
       req.author = author;
       next();
+    } else {
+      next(createHttpError(401, "Not a valid user!"));
     }
   }
 };

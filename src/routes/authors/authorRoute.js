@@ -1,8 +1,9 @@
 import express from "express";
 import createHttpError from "http-errors";
 import authorModel from "./authorModel.js";
+import blogPostModel from "../blogPosts/blogPostModel.js";
 import q2m from "query-to-mongo";
-import { basicAuthMiddleware } from "../auth/basic.js";
+import { checksLoginMiddleware } from "../auth/checksLogin.js";
 
 const authorRoute = express.Router();
 
@@ -17,7 +18,7 @@ const authorRoute = express.Router();
 //   }
 // });
 
-authorRoute.get("/", basicAuthMiddleware, async (req, res, next) => {
+authorRoute.get("/", async (req, res, next) => {
   try {
     const authors = await authorModel.find();
     res.send(authors);
@@ -35,6 +36,22 @@ authorRoute.post("/", async (req, res, next) => {
     next(error);
   }
 });
+
+authorRoute.get(
+  "/me/stories",
+  checksLoginMiddleware,
+  async (req, res, next) => {
+    try {
+      const posts = await blogPostModel.find({
+        authors: req.author._id.toString(),
+      });
+
+      res.status(200).send(posts);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 authorRoute.get("/:_id", async (req, res, next) => {
   try {
