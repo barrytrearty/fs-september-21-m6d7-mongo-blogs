@@ -59,6 +59,16 @@ authorRoute.post("/login", async (req, res, next) => {
   }
 });
 
+authorRoute.post("/logout", tokenCheckerMiddleware, async (req, res, next) => {
+  try {
+    req.user.accessToken = null;
+    await req.user.save();
+    res.send();
+  } catch (error) {
+    next(error);
+  }
+});
+
 authorRoute.get(
   "/me/stories",
   tokenCheckerMiddleware,
