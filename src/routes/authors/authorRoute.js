@@ -6,19 +6,10 @@ import q2m from "query-to-mongo";
 import { checksLoginMiddleware } from "../auth/checksLogin.js";
 import { JWTAuthenticate } from "../auth/jwtTools.js";
 import { tokenCheckerMiddleware } from "../auth/tokenCheckerMiddleware.js";
+import passport from "passport";
+import googleStrategy from "../auth/oauth.js";
 
 const authorRoute = express.Router();
-
-// authorRoute.get("/", basicAuthMiddleware, async (req, res, next) => {
-//   try {
-//     const q2mQuery = q2m(req.query);
-//     console.log(q2mQuery);
-//     const { totalAuthors, authors } = await authorModel.findAuthors(q2mQuery);
-//     res.send({ totalAuthors, authors });
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 authorRoute.get("/", async (req, res, next) => {
   try {
@@ -54,7 +45,7 @@ authorRoute.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
 
     const author = await authorModel.checkCredentials(email, password);
-
+    console.log(author);
     if (author) {
       const accessToken = await JWTAuthenticate(author);
       // const accessToken = await generateJWT(author);
@@ -70,13 +61,14 @@ authorRoute.post("/login", async (req, res, next) => {
 
 authorRoute.get(
   "/me/stories",
-  checksLoginMiddleware,
+  tokenCheckerMiddleware,
   async (req, res, next) => {
     try {
+      console.log(req.user._id);
       const posts = await blogPostModel.find({
-        authors: req.author._id.toString(),
+        authors: req.user._id.toString(),
       });
-
+      // const posts = await blogPostModel.find(req.user._id.toString());
       res.status(200).send(posts);
     } catch (error) {
       next(error);
@@ -133,5 +125,27 @@ authorRoute.delete("/:_id", async (req, res, next) => {
     next(error);
   }
 });
+
+//GOOGLE AUTHENTICATION ROUTES
+
+authorRoute.get(
+  "/googleLogin",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+authorRoute.get(
+  "/googleRedirect",
+  passport.authenticate("google"),
+  async (req, res, next) => {
+    try {
+      console.log(req);
+      res.redirect(
+        `http://localhost:3000?accessToken=${req.author.token.accessToken}`
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 export default authorRoute;
