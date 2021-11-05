@@ -74,7 +74,7 @@ authorRoute.get(
   tokenCheckerMiddleware,
   async (req, res, next) => {
     try {
-      console.log(req.user._id);
+      console.log(req.user._id.toString());
       const posts = await blogPostModel.find({
         authors: req.user._id.toString(),
       });
@@ -149,9 +149,8 @@ authorRoute.get(
   async (req, res, next) => {
     try {
       console.log(req);
-      res.redirect(
-        `http://localhost:3000?accessToken=${req.author.token.accessToken}`
-      );
+      console.log(`Token ${req.user}`);
+      res.redirect(`http://localhost:3000?accessToken=${req.user}`);
     } catch (error) {
       next(error);
     }

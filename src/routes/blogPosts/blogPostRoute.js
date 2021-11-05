@@ -4,13 +4,18 @@ import blogPostModel from "./blogPostModel.js";
 import commentModel from "./commentModel.js";
 import q2m from "query-to-mongo";
 import { checksLoginMiddleware } from "../auth/checksLogin.js";
+import { tokenCheckerMiddleware } from "../auth/tokenCheckerMiddleware.js";
 import { onlyUserMiddleware } from "../auth/onlyUser.js";
 
 const blogPostRoute = express.Router();
 
-blogPostRoute.post("/", async (req, res, next) => {
+blogPostRoute.post("/", tokenCheckerMiddleware, async (req, res, next) => {
   try {
-    const newBlogPost = new blogPostModel(req.body);
+    console.log(req.user._id.toString());
+    const newBlogPost = new blogPostModel({
+      ...req.body,
+      authors: [req.user._id.toString()],
+    });
     const { _id } = await newBlogPost.save(); // this is where the interaction with the db/collection happens
 
     res.status(201).send({ _id });
@@ -48,27 +53,22 @@ blogPostRoute.get("/:_id", async (req, res, next) => {
   }
 });
 
-blogPostRoute.put(
-  "/:_id",
-  checksLoginMiddleware,
-  onlyUserMiddleware,
-  async (req, res, next) => {
-    try {
-      const id = req.params._id;
-      const modifiedUser = await blogPostModel.findByIdAndUpdate(id, req.body, {
-        new: true, // returns the modified user
-      });
+blogPostRoute.put("/:_id", tokenCheckerMiddleware, async (req, res, next) => {
+  try {
+    const id = req.params._id;
+    const modifiedUser = await blogPostModel.findByIdAndUpdate(id, req.body, {
+      new: true, // returns the modified user
+    });
 
-      if (modifiedUser) {
-        res.send(modifiedUser);
-      } else {
-        next(createHttpError(404, `Blog Post with id ${id} not found!`));
-      }
-    } catch (error) {
-      next(error);
+    if (modifiedUser) {
+      res.send(modifiedUser);
+    } else {
+      next(createHttpError(404, `Blog Post with id ${id} not found!`));
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 blogPostRoute.delete(
   "/:_id",

@@ -15,6 +15,7 @@ const googleStrategy = new GoogleStrategy(
 
       if (author) {
         const token = await JWTAuthenticate(author);
+        passportNext(null, token);
       } else {
         const newAuthor = {
           name: googleProfile.name.givenName,
